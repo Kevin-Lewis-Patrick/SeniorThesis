@@ -2,6 +2,8 @@
 
 Simple repository for uploading academic projects from 2018-2019 school year. Unfortunately, my files from my school laptop that were saved on my new computer were lost, because Windows 11 is unstable and forced me to do a clean install, losing the files. These files are not necessarily the "final" versions from my Thesis, but are scavenged from emails and various other locations where I have in-progress backups.
 
+Code was done in Julia, similar language to Matlab.
+
 SeniorThesisRevision3.pdf - A close-to-final revision of my Senior Thesis, in pdf form. Generated with Latex.
 
 TransportEquation_P.jl - The final file I used when generating images and graphs for the final paper. Contains code to generate circular boundary conditions (plan to generalize in the future), forcing function, scattering, etc. Has support for parallelization, and multigrid method for better initial approximation.
