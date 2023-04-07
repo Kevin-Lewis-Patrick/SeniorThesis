@@ -56,10 +56,19 @@ end
     return U
 end
 
+# nx, ny - spatial resolutions
+# nw = directional / "temporal" resolution (which directions do light scatter in), generates even # of points from 0 to 2*pi inclusive
+# mu_a - absorption coefficient
+# mu_s - scattering coefficient
+# forcing - forcing function
+# boundary - boundary conditions
+# nprocs - number of active processors (parallelization)
 @everywhere function TransportEquation_Scatter(nx,ny,nw,mu_a,mu_s,forcing,boundary,nprocs=nprocs())
     X = range(-1,stop=1,length=nx);
     Y = range(-1,stop=1,length=ny);
     W = range(0,stop=2*pi-(2*pi)/nw,length=nw);
+    
+    # If no scattering, run TransportEquation_P
     if (mu_s == 0)
         return TransportEquation_P(nx,ny,nw,mu_a,mu_s,forcing,boundary,nprocs)
     end
@@ -106,6 +115,7 @@ end
     return U_Prev
 end
 
+# "Master Function" when using multiple cores or processes. 
 @everywhere function TransportEquation_P(nx,ny,nw,mu_a,mu_s,f,b,nprocs=nprocs())
     #println("nx is: ", nx)
     X = range(-1,stop=1,length=nx);
@@ -153,6 +163,7 @@ end
     return U
 end
 
+# Fill matrix used when implementing scattering. Parallelized function.
 @everywhere function fill_SU_P(nx,ny,nw,U_Prev,mu_s,nprocs)
     X = range(-1,stop=1,length=nx); Y = range(-1,stop=1,length=ny); W = range(0,stop=2*pi-(2*pi)/nw,length=nw);
     interpolation(x) = interpolant_intermediate(U_Prev,nx,ny,nw,x)
@@ -196,6 +207,7 @@ end
     return Su
 end
 
+# Fill matrix used when enabling scattering term
 @everywhere function fill_SU(X,Y,W,U_Prev,mu_s,interp)
     Su = zeros(size(X)[1],size(Y)[1],size(W)[1]);
     for i=1:size(X)[1]
@@ -209,6 +221,7 @@ end
     return Su
 end
 
+# Different method for calculating Transport Equation, using sparse matrices for greater time efficiency but lessened space efficiency.
 @everywhere function TransportEquationMatrix(nx,ny,nw,mu_a,mu_s,forcing,boundary)
 
     X = range(-1.01,stop = 1.01,              length = nx);
@@ -569,17 +582,6 @@ end
     Y = range(-1,stop=1,length=N);
     W = range(0,stop=2*pi-2*pi/WW,length=WW);
 
-
-
-
-
-
-
-
-
-
-
-
     #x_L,x_H are the 1-based indices of points in u
     x_index = 1
     for i=1:size(X)[1]
@@ -593,8 +595,6 @@ end
     x_H = x_index
     x_L = max(x_L,1)
     x_H = min(x_H,M)
-
-
 
     y_index = 1
     for i=1:size(Y)[1]
@@ -697,7 +697,7 @@ end
     answer = w_1*u[x_L,y_L,z_L] + w_2*u[x_H,y_L,z_L] + w_3*u[x_L,y_H,z_L] + w_4*u[x_H,y_H,z_L] + w_5*u[x_L,y_L,z_H] + w_6*u[x_H,y_L,z_H] + w_7*u[x_L,y_H,z_H] + w_8*u[x_H,y_H,z_H]
     return answer
 end
-
+# Calculate distance between two 3-dimensional points / vectors.
 @everywhere function distance(x1,x2)
     return sqrt((x1[1] - x2[1])^2 + (x1[2] - x2[2])^2 + (x1[3] - x2[3])^2)
 end
